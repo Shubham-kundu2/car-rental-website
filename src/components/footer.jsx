@@ -5,41 +5,49 @@ import {
   faPhone,
   faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
+
 const Footer = () => {
   return (
     <>
-      <div className="bg-black mt-16 h-[300px] -ml-8 flex flex-col md:flex-row text-white">
-        <div className="text ml-16 mt-16 md:w-[300px]">
-          <div className="font-bold text-2xl">
+      <div className="mt-16 flex flex-col gap-10 bg-slate-950 px-6 py-12 text-white md:flex-row md:justify-between md:px-12">
+        <div className="md:w-[300px]">
+          <div className="text-2xl font-bold">
             Go<span className="text-sky-600">Ride</span> Rentals
           </div>
-          <div className="mt-4">
+          <div className="mt-4 text-slate-300">
             Experience the freedom of the road with our premium car rentals -
             your adventure awaits.
             <FontAwesomeIcon icon={faHeart} />
           </div>
-          <div className="icons flex">
-            <div className="insta"></div>
+          <div className="mt-4 rounded-2xl bg-white/5 px-4 py-3 text-sm text-slate-300">
+            Live pricing, instant booking, airport pickup, and premium support.
           </div>
         </div>
-        <div className="text ml-16 mt-16">
-          <div className="font-bold text-2xl">
+        <div>
+          <div className="text-2xl font-bold">
             <span>Information</span>
           </div>
-          <div className="mt-4 font-semibold">
+          <div className="mt-4 font-semibold text-slate-300">
             <ul>
-              <li className="m-2">About</li>
-              <li className="m-2">Services</li>
-              <li className="m-2">Terms and Conditions</li>
+              <li className="m-2">
+                <Link to="/">Home</Link>
+              </li>
+              <li className="m-2">
+                <Link to="/cars">Cars</Link>
+              </li>
+              <li className="m-2">
+                <Link to="/booking">Book a ride</Link>
+              </li>
               <li className="m-2">Best Price Guarantee</li>
             </ul>
           </div>
         </div>
-        <div className="text ml-16 mt-16">
-          <div className="font-bold text-2xl">
+        <div>
+          <div className="text-2xl font-bold">
             <span>Customer Support</span>
           </div>
-          <div className="mt-4 font-semibold">
+          <div className="mt-4 font-semibold text-slate-300">
             <ul>
               <li className="m-2">Payment Option</li>
               <li className="m-2">FAQ</li>
@@ -49,11 +57,11 @@ const Footer = () => {
             </ul>
           </div>
         </div>
-        <div className="text ml-16 mt-16">
-          <div className="font-bold text-2xl">
+        <div>
+          <div className="text-2xl font-bold">
             <span>Have a Question?</span>
           </div>
-          <div className="mt-4 font-semibold">
+          <div className="mt-4 font-semibold text-slate-300">
             <ul>
               <li className="m-2">
                 <span className="mr-6">
@@ -77,7 +85,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className="lastLine text-center font-semibold text-xl bg-black text-white">
+      <div className="lastLine bg-slate-950 px-6 pb-8 text-center text-xl font-semibold text-white">
         CopyRight &#169; 2024 All Right Reserved
       </div>
     </>

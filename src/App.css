@@ -1,5 +1,11 @@
 @import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css);
 
-/* * {
-  background-color: rgb(172, 174, 194);
-} */
+:root {
+  color-scheme: light;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(14, 165, 233, 0.15), transparent 30%),
+    linear-gradient(180deg, #f7fbff 0%, #edf3f7 100%);
+}

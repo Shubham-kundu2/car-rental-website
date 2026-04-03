@@ -1,82 +1,98 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
-const Header = () => {
+const Header = ({ authUser, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  const navLinkClass = ({ isActive }) =>
+    `block rounded-full px-4 py-2 text-sm font-semibold transition ${
+      isActive
+        ? "bg-slate-900 text-white"
+        : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+    }`;
+
   return (
-    <>
-      <section>
-        <nav className="flex items-center justify-between flex-wrap bg-white-900 p-4">
-          <div className="flex items-center flex-shrink-0 text-white mr-6">
-            <img
-              src="/img/logo.png"
-              alt="GoRide Rentals Logo"
-              className="h-10 w-10 w-auto rounded-[36px] mr-2"
-            />
-            <span className="font-semibold text-xl tracking-tight ml-2">
+    <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        <Link to="/" className="flex items-center gap-3">
+          <img
+            src="/img/logo.png"
+            alt="GoRide Rentals Logo"
+            className="h-11 w-11 rounded-full object-cover shadow-sm"
+          />
+          <div>
+            <div className="text-lg font-semibold tracking-tight text-slate-900">
               GoRide Rentals
-            </span>
-          </div>
-          <div className="block lg:hidden">
-            <button
-              onClick={toggleMenu}
-              className="flex items-center px-3 py-2 border rounded text-gray-300 border-gray-300 hover:text-white hover:border-white"
-            >
-              <svg
-                className="fill-current h-3 w-3"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <title>Menu</title>
-                <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
-              </svg>
-            </button>
-          </div>
-          <div
-            className={`w-full ${
-              isOpen ? "block" : "hidden"
-            } lg:flex lg:items-center lg:w-auto`}
-          >
-            <div className="text-sm text-lg lg:flex-grow ">
-              <a
-                href="#"
-                className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-[55px]"
-              >
-                Home
-              </a>
-              <Link
-                to="/cars"
-                className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-[55px]"
-              >
-                Cars
-              </Link>
-              <a
-                href="#about"
-                className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-[55px]"
-              >
-                About
-              </a>
-              <a
-                href="#services"
-                className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-[55px]"
-              >
-                Services
-              </a>
-              <Link
-                to="/login"
-                className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-[55px]"
-              >
-                SignIn
-              </Link>
+            </div>
+            <div className="text-xs uppercase tracking-[0.25em] text-sky-600">
+              Premium fleet
             </div>
           </div>
-        </nav>
-      </section>
-    </>
+        </Link>
+        <button
+          onClick={toggleMenu}
+          className="rounded-xl border px-3 py-2 text-slate-700 lg:hidden"
+          type="button"
+        >
+          Menu
+        </button>
+        <div
+          className={`absolute left-0 top-full w-full border-b border-slate-200 bg-white px-4 pb-4 lg:static lg:w-auto lg:border-0 lg:bg-transparent lg:p-0 ${
+            isOpen ? "block" : "hidden lg:block"
+          }`}
+        >
+          <div className="mt-4 flex flex-col gap-2 lg:mt-0 lg:flex-row lg:items-center">
+            <NavLink to="/" className={navLinkClass} onClick={() => setIsOpen(false)}>
+              Home
+            </NavLink>
+            <NavLink
+              to="/cars"
+              className={navLinkClass}
+              onClick={() => setIsOpen(false)}
+            >
+              Cars
+            </NavLink>
+            <NavLink
+              to="/booking"
+              className={navLinkClass}
+              onClick={() => setIsOpen(false)}
+            >
+              Booking
+            </NavLink>
+            <a href="/#about" className="block rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-900">
+              About
+            </a>
+            <a href="/#services" className="block rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-900">
+              Services
+            </a>
+            {authUser ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onLogout();
+                  setIsOpen(false);
+                }}
+                className="block rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <NavLink
+                to="/login"
+                className={navLinkClass}
+                onClick={() => setIsOpen(false)}
+              >
+                Sign In
+              </NavLink>
+            )}
+          </div>
+        </div>
+      </nav>
+    </header>
   );
 };
 

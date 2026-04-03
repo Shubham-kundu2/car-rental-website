@@ -1,10 +1,14 @@
-import React from "react";
 import "../css/style.css";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 
-const CarsFooter = ({ currentPage, setCurrentPage }) => {
-  const totalPages = 12;
+const CarsFooter = ({
+  currentPage,
+  setCurrentPage,
+  itemsPerPage = 1,
+  totalItems = 0,
+}) => {
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
   const pageNumbers = Array.from(
     { length: totalPages },

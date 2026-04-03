@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: goride-rentals-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: car_rental_db
+      - key: FRONTEND_URL
+        sync: false

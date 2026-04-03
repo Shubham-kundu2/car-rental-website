@@ -1,5 +1,4 @@
-// import React from "react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserGroup,
@@ -7,123 +6,170 @@ import {
   faGaugeSimpleHigh,
   faCar,
   faHeart,
+  faLocationDot,
+  faStar,
 } from "@fortawesome/free-solid-svg-icons";
-import carsData from "./carsapi";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.css";
 import SwiperCore from "swiper/core";
 import { Navigation } from "swiper/modules";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { formatInr } from "../utils/currency";
+import { attachFallbackImage, getFallbackCarImage } from "../utils/carImage";
+
 SwiperCore.use([Navigation]);
 
-const Cards = () => {
+const Cards = ({
+  cars,
+  isLoadingCars,
+  favoriteCarIds,
+  onToggleFavorite,
+  onSelectCar,
+}) => {
   const [carData, setCarData] = useState([]);
-  console.log("CarData : " + JSON.stringify(carData));
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await Promise.resolve(carsData);
-        setCarData(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchData();
-  }, []);
+    setCarData(cars);
+  }, [cars]);
+
+  const handleBookNow = (carId) => {
+    onSelectCar(carId);
+    navigate(`/booking?car=${carId}`);
+  };
 
   return (
-    <Swiper
-      breakpoints={{
-        640: {
-          slidesPerView: 1,
-          spaceBetween: 10,
-        },
-        768: {
-          slidesPerView: 2,
-          spaceBetween: 20,
-        },
-        1280: {
-          slidesPerView: 3,
-          spaceBetween: 20,
-        },
-      }}
-      navigation
-      spaceBetween={10}
-      slidesPerView={1}
-    >
-      {/* <div className="grid md:grid-cols-2 xl:grid-cols-3"> */}
-      {carData.map((car) => (
-        <SwiperSlide key={car.name}>
-          <div className="grid bg-white border-2 rounded-lg border-r-black grid-cols-1  gap-4 mb-8 w-[400px] mx-auto p-1 gap-14">
+    <>
+      {isLoadingCars && (
+        <div className="mx-auto max-w-6xl px-4 text-center text-slate-500">
+          Loading featured fleet...
+        </div>
+      )}
+      {!isLoadingCars && (
+        <Swiper
+          breakpoints={{
+            640: {
+              slidesPerView: 1,
+              spaceBetween: 16,
+            },
+            768: {
+              slidesPerView: 2,
+              spaceBetween: 20,
+            },
+            1280: {
+              slidesPerView: 3,
+              spaceBetween: 24,
+            },
+          }}
+          navigation
+          spaceBetween={16}
+          slidesPerView={1}
+          slidesOffsetBefore={16}
+          slidesOffsetAfter={16}
+          className="px-1 pb-4"
+        >
+          {carData.slice(0, 6).map((car) => (
+            <SwiperSlide key={car.id} className="h-auto">
+              <div className="grid h-full w-full gap-6 rounded-[28px] border-2 border-slate-200 bg-white p-4 shadow-sm">
             <div className="carPic">
               <img
-                src={car.image}
-                className="rounded-lg w-[400px] h-[250px] md:w-[380px] m-2 transition duration-300 ease-in-out transform scale-100 hover:scale-110"
-                alt="Car"
+                src={car.image || getFallbackCarImage(car.name)}
+                onError={(event) => attachFallbackImage(event, car.name)}
+                className="h-[250px] w-full rounded-[22px] object-cover transition duration-300 ease-in-out hover:scale-[1.02]"
+                alt={car.name}
               />
             </div>
-            <div className="details col-span-2 gap-6 pl-3">
-              <div className="text-3xl font-serif font-semibold text-center">
+            <div className="px-2">
+              <div className="flex items-center justify-between text-sm font-semibold text-slate-600">
+                <span className="rounded-full bg-sky-100 px-3 py-1 text-sky-700">
+                  {car.category}
+                </span>
+                <span
+                  className={`rounded-full px-3 py-1 ${
+                    car.availableNow
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-rose-100 text-rose-700"
+                  }`}
+                >
+                  {car.availableNow ? `${car.availableUnits} ready` : "Waitlist"}
+                </span>
+              </div>
+              <div className="mt-4 text-center text-3xl font-serif font-semibold">
                 {car.name}
               </div>
-              <div className="icons mt-2">
-                <div className="grid grid-cols-2 ml-[10px] font-semibold text-xl gap-16 ">
-                  <div className="grid grid-rows-2 gap-6">
-                    <span>
-                      <FontAwesomeIcon icon={faUserGroup} />{" "}
-                      <span className="text-sky-600 ml-2">
-                        {car.noOfPeople} People
-                      </span>
-                    </span>
-                    <span>
-                      <FontAwesomeIcon icon={faGaugeSimpleHigh} />{" "}
-                      <span className="text-sky-600 ml-2">
-                        {car.mileage} km/L
-                      </span>
-                    </span>
-                  </div>
-                  <div className="grid grid-rows-2 gap-6">
-                    <span>
-                      <FontAwesomeIcon className="h-[20px]" icon={faGasPump} />
-                      <span className="text-sky-600 ml-3">{car.fuel}</span>
-                    </span>
-                    <span>
-                      <FontAwesomeIcon icon={faCar} />
-                      <span className="text-sky-600 ml-3">{car.type}</span>
-                    </span>
-                  </div>
+              <div className="mt-2 flex items-center justify-center gap-4 text-sm text-slate-500">
+                <span>
+                  <FontAwesomeIcon icon={faLocationDot} /> {car.location}
+                </span>
+                <span>
+                  <FontAwesomeIcon icon={faStar} className="text-amber-500" />{" "}
+                  {car.rating}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-6 text-xl font-semibold">
+                <div className="grid gap-5">
+                  <span>
+                    <FontAwesomeIcon icon={faUserGroup} />{" "}
+                    <span className="ml-2 text-sky-600">{car.noOfPeople} People</span>
+                  </span>
+                  <span>
+                    <FontAwesomeIcon icon={faGaugeSimpleHigh} />{" "}
+                    <span className="ml-2 text-sky-600">{car.mileage} km/L</span>
+                  </span>
+                </div>
+                <div className="grid gap-5">
+                  <span>
+                    <FontAwesomeIcon className="h-[20px]" icon={faGasPump} />
+                    <span className="ml-3 text-sky-600">{car.fuel}</span>
+                  </span>
+                  <span>
+                    <FontAwesomeIcon icon={faCar} />
+                    <span className="ml-3 text-sky-600">{car.type}</span>
+                  </span>
                 </div>
               </div>
             </div>
-            <div>
-              <hr
-                className="mx-auto w-[330px]"
-                style={{ border: "1px solid grey" }}
-              ></hr>
-              <div className="flex justify-between text-center">
-                <div className="price font-semibold ml-4 text-2xl mt-3 ">
-                  ${car.price}/Day
-                </div>
-                <div className="rent flex">
-                  <div className="wishlist m-3 border-2 p-1.5 hover:bg-slate-200 transition duration-300 ease-in-out transform scale-100 hover:scale-110 rounded-lg bg-sky-600">
-                    <FontAwesomeIcon icon={faHeart} />
-                  </div>
-                  <div className="buttonRent">
-                    <Link to="/payment">
-                      <button className="border-2 m-3 p-1.5 hover:bg-slate-200 transition duration-300 ease-in-out transform scale-100 hover:scale-110 font-semibold rounded-lg bg-sky-600">
-                        Rent now
-                      </button>
-                    </Link>
-                  </div>
-                </div>
+            <div className="rounded-[22px] bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-slate-800">Deposit</span>
+                <span>{formatInr(car.securityDeposit)}</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="font-semibold text-slate-800">Reviews</span>
+                <span>{car.reviews}</span>
               </div>
             </div>
-          </div>
-        </SwiperSlide>
-      ))}
-
-      {/* </div> */}
-    </Swiper>
+            <div className="flex items-center justify-between text-center">
+              <div className="price text-2xl font-semibold">
+                {formatInr(car.price)}/day
+              </div>
+              <div className="rent flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => onToggleFavorite(car.id)}
+                  className={`rounded-2xl border-2 p-3 transition duration-300 ease-in-out hover:scale-110 ${
+                    favoriteCarIds.includes(car.id)
+                      ? "bg-rose-500 text-white"
+                      : "bg-sky-600"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faHeart} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBookNow(car.id)}
+                  className="rounded-2xl border-2 bg-sky-600 px-4 py-3 font-semibold transition duration-300 ease-in-out hover:scale-105 hover:bg-slate-200"
+                >
+                  Rent now
+                </button>
+              </div>
+            </div>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      )}
+    </>
   );
 };
 

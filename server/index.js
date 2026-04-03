@@ -3,7 +3,7 @@ const cors = require("cors");
 const mysql = require("mysql2");
 
 const app = express();
-const PORT = 5000;
+const PORT = Number(process.env.PORT) || 5001;
 
 // Middleware
 app.use(cors());
@@ -11,10 +11,10 @@ app.use(express.json());
 
 // MySQL Connection
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "Shub2002@", // Your MySQL password
-  database: "car_rental_db", // Make sure this DB exists
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "Shub2002@",
+  database: process.env.DB_NAME || "car_rental_db",
 });
 
 // Connect to MySQL
@@ -46,7 +46,7 @@ app.post("/register", (req, res) => {
     db.query(
       "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
       [name, email, password],
-      (err, result) => {
+      (err) => {
         if (err) {
           console.error("Insert Error:", err);
           return res.status(500).send("Error registering user");
@@ -56,6 +56,32 @@ app.post("/register", (req, res) => {
       }
     );
   });
+});
+
+// === Login Endpoint ===
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).send("Email and password are required.");
+  }
+
+  db.query(
+    "SELECT * FROM users WHERE email = ? AND password = ?",
+    [email, password],
+    (err, results) => {
+      if (err) {
+        console.error("Login Error:", err);
+        return res.status(500).send("Database error");
+      }
+
+      if (results.length === 0) {
+        return res.status(401).send("Invalid email or password");
+      }
+
+      return res.status(200).send("Success");
+    }
+  );
 });
 
 // === Test Route (optional) ===
@@ -76,7 +102,7 @@ app.get("/test-register", (req, res) => {
     db.query(
       "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
       [testUser.name, testUser.email, testUser.password],
-      (err, result) => {
+      (err) => {
         if (err) return res.status(500).send("Error inserting test user");
 
         res.send("✅ Test user registered successfully!");

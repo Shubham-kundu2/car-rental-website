@@ -1,62 +1,93 @@
-
 # GoRide Rental
 
-This project is a web-based car rental application built using React.js. It provides users with a seamless and intuitive interface for booking rental vehicles. Key features include user registration, car listing, search, pagination, admin panel, feedback, and support functionalities. The application is designed to revolutionize the car rental experience, focusing on simplicity, clarity, and user-friendly features.
+GoRide Rental is a React + Vite frontend with an Express + MySQL backend for browsing cars, registering users, saving favorites, and placing bookings.
 
+## Local Development
 
-## Deployment
-
-To deploy this project run
-
+1. Install frontend dependencies:
 ```bash
-npm i  
+npm install
 ```
-//This will create a package.json
 
+2. Install backend dependencies:
+```bash
+cd server
+npm install
+cd ..
+```
+
+3. Create env files:
+```bash
+copy .env.example .env
+copy server\.env.example server\.env
+```
+
+4. Start the backend:
+```bash
+cd server
+npm start
+```
+
+5. Start the frontend in a second terminal:
 ```bash
 npm run dev
 ```
-//To start the server at localhost:5173
 
+The frontend runs on `http://localhost:5173` and the backend runs on `http://localhost:5001` by default.
 
-## Acknowledgements
+## Public Deployment
 
- -## Features
+The project is now prepared for a split deployment:
 
-1. **API Integration:**
-- The website seamlessly integrates with a car rental API to provide up-to-date information on available cars, pricing, and specifications.
+- Frontend: Vercel
+- Backend API: Render
+- Database: hosted MySQL
 
-2. **Pagination:**
-- The car listing is organized with pagination, allowing users to navigate through multiple pages of available cars efficiently.
+### Frontend on Vercel
 
-3. **Search Option:**
-- Users can utilize a powerful search feature to find specific cars based on criteria such as make, model, or other relevant attributes.
+1. Import this repo into Vercel.
+2. Use:
+   - Framework preset: `Vite`
+   - Build command: `npm run build`
+   - Output directory: `dist`
+3. Add environment variable:
+   - `VITE_API_BASE_URL=https://your-render-service.onrender.com`
+4. Deploy.
 
-4. **Responsive Design:**
-- The website is designed to be responsive, ensuring a consistent and user-friendly experience across various devices and screen sizes.
+`vercel.json` is included so React Router routes like `/cars`, `/booking`, `/login`, and `/register` work correctly on refresh.
 
-5. **User-friendly Buttons:**
-- Intuitive buttons are strategically placed to enhance user interaction, providing an easy and enjoyable browsing experience.
+### Backend on Render
 
-6. **Libraries Used**:
-- Utilizes Swiper, Countof, React Router DOM etc. for enhanced functionality.
+1. Create a new Web Service from this repo.
+2. Set the root directory to `server`.
+3. Use:
+   - Build command: `npm install`
+   - Start command: `npm start`
+4. Add environment variables:
+   - `DB_HOST`
+   - `DB_PORT`
+   - `DB_USER`
+   - `DB_PASSWORD`
+   - `DB_NAME`
+   - `FRONTEND_URL=https://your-vercel-site.vercel.app`
 
-7. **Tailwind CSS**: 
-- Implements responsive design using Tailwind CSS for a seamless browsing experience.
+`render.yaml` is included to make that setup easier.
 
+### Database
 
+The backend auto-creates the schema and seeds the cars table on startup. Point the backend to a reachable MySQL instance using the values in `server/.env.example`.
 
-## Demo
+## Features
 
+- Live car catalog from MySQL
+- User registration and sign-in
+- Booking flow with add-ons and price summary
+- SQL-backed booking persistence
+- Favorites in browser storage
+- Responsive catalog and booking pages
 
-## Screenshots
-![LandingPage](https://github.com/PrakashM7781/Car_rental/blob/main/car-rental/public/img/Screenshot%202024-04-24%20163253.png?raw=true)
+## Notes
 
-![Offering](https://github.com/PrakashM7781/Car_rental/blob/main/car-rental/public/img/offers.png?raw=true)
-
-![BookingDetails](https://github.com/PrakashM7781/Car_rental/blob/main/car-rental/public/img/api.png?raw=true)
-
-![CarsList](https://github.com/PrakashM7781/carseller/blob/master/public/images/Screenshot%202024-01-15%20124919.png?raw=true)
-
-![Pagination](https://github.com/PrakashM7781/carseller/blob/master/public/images/Screenshot%202024-01-15%20124950.png?raw=true)
-
+- `localhost` links only work on your own machine.
+- Once deployed, send your friends the Vercel frontend URL.
+- Passwords are still stored in plaintext right now. Hashing should be the next backend security improvement.

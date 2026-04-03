@@ -1,153 +1,347 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Country, State, City } from "country-state-city";
-import { useNavigate } from "react-router-dom";
+import { formatInr } from "../utils/currency";
 
-const BookingForm = () => {
+const addOnOptions = [
+  { key: "gps", label: "Navigation GPS", price: 450 },
+  { key: "childSeat", label: "Child seat", price: 650 },
+  { key: "insurance", label: "Premium protection", price: 1200 },
+];
+
+const labelMap = {
+  pickupCountry: "Pickup country",
+  pickupState: "Pickup state",
+  pickupCity: "Pickup city",
+  pickupStreet: "Pickup street",
+  pickupLandmark: "Pickup landmark",
+  pickupDateTime: "Pickup date and time",
+  dropoffCountry: "Drop-off country",
+  dropoffState: "Drop-off state",
+  dropoffCity: "Drop-off city",
+  dropoffStreet: "Drop-off street",
+  dropoffLandmark: "Drop-off landmark",
+  dropoffDateTime: "Drop-off date and time",
+  driverName: "Driver name",
+  phone: "Phone number",
+};
+
+const buildLocationOptions = (countryCode, stateCode) => ({
+  states: countryCode ? State.getStatesOfCountry(countryCode) : [],
+  cities:
+    countryCode && stateCode
+      ? City.getCitiesOfState(countryCode, stateCode)
+      : [],
+});
+
+const BookingForm = ({
+  activeCar,
+  formData,
+  setFormData,
+  onSubmit,
+  isSubmitting,
+}) => {
   const [countries, setCountries] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [states, setStates] = useState([]);
-  const [selectedState, setSelectedState] = useState("");
-  const [cities, setCities] = useState([]);
-  const [selectedCity, setSelectedCity] = useState("");
-  const [streetNumber, setStreetNumber] = useState("");
-  const [landmark, setLandmark] = useState("");
-  const [pickupDateTime, setPickupDateTime] = useState("");
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
 
   useEffect(() => {
     setCountries(Country.getAllCountries());
   }, []);
 
-  const handleCountryChange = (e) => {
-    const countryId = e.target.value;
-    setSelectedCountry(countryId);
-    setStates(State.getStatesOfCountry(countryId));
-    setSelectedState("");
-    setCities([]);
-    setSelectedCity("");
+  const pickupOptions = buildLocationOptions(
+    formData.pickupCountry,
+    formData.pickupState
+  );
+  const dropoffOptions = buildLocationOptions(
+    formData.dropoffCountry,
+    formData.dropoffState
+  );
+
+  const updateField = (field, value) => {
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      [field]: value,
+    }));
   };
 
-  const handleStateChange = (e) => {
-    const stateId = e.target.value;
-    setSelectedState(stateId);
-    setCities(City.getCitiesOfState(selectedCountry, stateId));
-    setSelectedCity("");
+  const updateCountry = (prefix, value) => {
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      [`${prefix}Country`]: value,
+      [`${prefix}State`]: "",
+      [`${prefix}City`]: "",
+    }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const updateState = (prefix, value) => {
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      [`${prefix}State`]: value,
+      [`${prefix}City`]: "",
+    }));
+  };
 
-    const newErrors = {};
-    if (!selectedCountry) newErrors.country = "Country is required.";
-    if (!selectedState) newErrors.state = "State is required.";
-    if (!selectedCity) newErrors.city = "City is required.";
-    if (!streetNumber) newErrors.streetNumber = "Street number is required.";
-    if (!landmark) newErrors.landmark = "Landmark is required.";
-    if (!pickupDateTime) newErrors.pickupDateTime = "Pickup date and time is required.";
+  const toggleAddOn = (key) => {
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      addOns: {
+        ...currentFormData.addOns,
+        [key]: !currentFormData.addOns[key],
+      },
+    }));
+  };
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+  const validate = () => {
+    const nextErrors = {};
+    Object.keys(labelMap).forEach((field) => {
+      if (!formData[field]) {
+        nextErrors[field] = `${labelMap[field]} is required.`;
+      }
+    });
+
+    if (
+      formData.pickupDateTime &&
+      formData.dropoffDateTime &&
+      new Date(formData.dropoffDateTime) <= new Date(formData.pickupDateTime)
+    ) {
+      nextErrors.dropoffDateTime =
+        "Drop-off date must be after the pickup date.";
+    }
+
+    return nextErrors;
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const nextErrors = validate();
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
 
-    // Form is valid
-    console.log("Form data submitted successfully!");
-    navigate("/cars");
+    setErrors({});
+    onSubmit(formData);
   };
 
-  return (
-    <div className="max-w-md p-6 bg-white">
-      <h1 className="text-2xl font-semibold mb-4">Select Pickup Location</h1>
-      <form onSubmit={handleSubmit}>
-        <select
-          value={selectedCountry}
-          onChange={handleCountryChange}
-          className="w-full border rounded-md px-3 py-2 mt-1"
-        >
-          <option value="">Select a country</option>
-          {countries.map((country) => (
-            <option key={country.isoCode} value={country.isoCode}>
-              {country.name}
-            </option>
-          ))}
-        </select>
-        {errors.country && <p className="text-red-500 text-sm">{errors.country}</p>}
-
-        {selectedCountry && (
-          <>
-            <select
-              value={selectedState}
-              onChange={handleStateChange}
-              className="w-full border rounded-md px-3 py-2 mt-4"
-            >
-              <option value="">Select a state</option>
-              {states.map((state) => (
-                <option key={state.isoCode} value={state.isoCode}>
-                  {state.name}
-                </option>
-              ))}
-            </select>
-            {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
-          </>
-        )}
-
-        {selectedState && (
-          <>
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 mt-4"
-            >
-              <option value="">Select a city</option>
-              {cities.map((city) => (
-                <option key={city.name} value={city.name}>
-                  {city.name}
-                </option>
-              ))}
-            </select>
-            {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
-          </>
-        )}
-
-        <div className="mb-4 mt-4">
-          <label className="block text-sm font-medium text-gray-700">Street Number</label>
+  const renderLocationFields = (title, prefix, options) => (
+    <div className="rounded-[28px] bg-slate-50 p-5">
+      <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-slate-600">Country</label>
+          <select
+            value={formData[`${prefix}Country`]}
+            onChange={(event) => updateCountry(prefix, event.target.value)}
+            className="mt-2 w-full rounded-2xl border px-4 py-3"
+          >
+            <option value="">Select a country</option>
+            {countries.map((country) => (
+              <option key={country.isoCode} value={country.isoCode}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+          {errors[`${prefix}Country`] && (
+            <p className="mt-1 text-sm text-rose-600">
+              {errors[`${prefix}Country`]}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-600">State</label>
+          <select
+            value={formData[`${prefix}State`]}
+            onChange={(event) => updateState(prefix, event.target.value)}
+            className="mt-2 w-full rounded-2xl border px-4 py-3"
+          >
+            <option value="">Select a state</option>
+            {options.states.map((state) => (
+              <option key={state.isoCode} value={state.isoCode}>
+                {state.name}
+              </option>
+            ))}
+          </select>
+          {errors[`${prefix}State`] && (
+            <p className="mt-1 text-sm text-rose-600">
+              {errors[`${prefix}State`]}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-600">City</label>
+          <select
+            value={formData[`${prefix}City`]}
+            onChange={(event) =>
+              updateField(`${prefix}City`, event.target.value)
+            }
+            className="mt-2 w-full rounded-2xl border px-4 py-3"
+          >
+            <option value="">Select a city</option>
+            {options.cities.map((city) => (
+              <option key={city.name} value={city.name}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+          {errors[`${prefix}City`] && (
+            <p className="mt-1 text-sm text-rose-600">
+              {errors[`${prefix}City`]}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-600">Street</label>
           <input
             type="text"
-            value={streetNumber}
-            onChange={(e) => setStreetNumber(e.target.value)}
-            className="w-full border rounded-md px-3 py-2 mt-1"
+            value={formData[`${prefix}Street`]}
+            onChange={(event) =>
+              updateField(`${prefix}Street`, event.target.value)
+            }
+            className="mt-2 w-full rounded-2xl border px-4 py-3"
+            placeholder="Street number or block"
           />
-          {errors.streetNumber && <p className="text-red-500 text-sm">{errors.streetNumber}</p>}
+          {errors[`${prefix}Street`] && (
+            <p className="mt-1 text-sm text-rose-600">
+              {errors[`${prefix}Street`]}
+            </p>
+          )}
         </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Landmark</label>
+      </div>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-slate-600">Landmark</label>
           <input
             type="text"
-            value={landmark}
-            onChange={(e) => setLandmark(e.target.value)}
-            className="w-full border rounded-md px-3 py-2 mt-1"
+            value={formData[`${prefix}Landmark`]}
+            onChange={(event) =>
+              updateField(`${prefix}Landmark`, event.target.value)
+            }
+            className="mt-2 w-full rounded-2xl border px-4 py-3"
+            placeholder="Nearby landmark"
           />
-          {errors.landmark && <p className="text-red-500 text-sm">{errors.landmark}</p>}
+          {errors[`${prefix}Landmark`] && (
+            <p className="mt-1 text-sm text-rose-600">
+              {errors[`${prefix}Landmark`]}
+            </p>
+          )}
         </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Pickup Date and Time</label>
+        <div>
+          <label className="text-sm font-medium text-slate-600">
+            Date and time
+          </label>
           <input
             type="datetime-local"
-            value={pickupDateTime}
-            onChange={(e) => setPickupDateTime(e.target.value)}
-            className="w-full border rounded-md px-3 py-2 mt-1"
+            value={formData[`${prefix}DateTime`]}
+            onChange={(event) =>
+              updateField(`${prefix}DateTime`, event.target.value)
+            }
+            className="mt-2 w-full rounded-2xl border px-4 py-3"
           />
-          {errors.pickupDateTime && <p className="text-red-500 text-sm">{errors.pickupDateTime}</p>}
+          {errors[`${prefix}DateTime`] && (
+            <p className="mt-1 text-sm text-rose-600">
+              {errors[`${prefix}DateTime`]}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full lg:w-[58%]">
+      <form onSubmit={handleSubmit} className="rounded-[32px] bg-white p-6 shadow-lg">
+        <div className="flex flex-col gap-2 border-b pb-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-sky-600">
+            Booking details
+          </p>
+          <h2 className="text-3xl font-semibold text-slate-900">
+            {activeCar ? `Book the ${activeCar.name}` : "Select a vehicle first"}
+          </h2>
+          <p className="text-slate-500">
+            Fill in trip details, pickup and drop-off locations, then confirm
+            your reservation.
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="text-sm font-medium text-slate-600">
+              Driver name
+            </label>
+            <input
+              type="text"
+              value={formData.driverName}
+              onChange={(event) => updateField("driverName", event.target.value)}
+              className="mt-2 w-full rounded-2xl border px-4 py-3"
+              placeholder="Full name"
+            />
+            {errors.driverName && (
+              <p className="mt-1 text-sm text-rose-600">{errors.driverName}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm font-medium text-slate-600">
+              Phone number
+            </label>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(event) => updateField("phone", event.target.value)}
+              className="mt-2 w-full rounded-2xl border px-4 py-3"
+              placeholder="+91 98765 43210"
+            />
+            {errors.phone && (
+              <p className="mt-1 text-sm text-rose-600">{errors.phone}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-6">
+          {renderLocationFields("Pickup location", "pickup", pickupOptions)}
+          {renderLocationFields("Drop-off location", "dropoff", dropoffOptions)}
+        </div>
+
+        <div className="mt-6 rounded-[28px] bg-slate-50 p-5">
+          <h3 className="text-xl font-semibold text-slate-900">Travel add-ons</h3>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {addOnOptions.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => toggleAddOn(option.key)}
+                className={`rounded-2xl border px-4 py-4 text-left ${
+                  formData.addOns[option.key]
+                    ? "border-sky-500 bg-sky-50"
+                    : "bg-white"
+                }`}
+              >
+                <p className="font-semibold text-slate-900">{option.label}</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  {formatInr(option.price)}/day
+                </p>
+              </button>
+            ))}
+          </div>
+          <div className="mt-4">
+            <label className="text-sm font-medium text-slate-600">
+              Promo code
+            </label>
+            <input
+              type="text"
+              value={formData.promoCode}
+              onChange={(event) => updateField("promoCode", event.target.value)}
+              className="mt-2 w-full rounded-2xl border px-4 py-3 md:max-w-sm"
+              placeholder="WEEKEND10"
+            />
+          </div>
         </div>
 
         <button
           type="submit"
-          className="mt-6 w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
+          disabled={isSubmitting}
+          className="mt-6 w-full rounded-2xl bg-sky-600 px-6 py-4 text-lg font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Submit
+          {isSubmitting ? "Saving booking..." : "Confirm booking"}
         </button>
       </form>
     </div>

@@ -1,7 +1,5 @@
-// import React from 'react'
-import Header from "./header";
-import "../css/upperPage.css";
-import TypeWriter from "./typewriter";
+import "./css/upperPage.css";
+import TypeWriter from "./components/typewriter";
 import { Link } from "react-router-dom";
 const UpperPage = () => {
   return (
@@ -13,8 +11,7 @@ const UpperPage = () => {
           backgroundSize: "cover",
         }}
       >
-        <Header />
-        <div className="typing text-white xl:mt-[35px] md:text-lg md:text-white xl:text-xl lg:mt-[65px]">
+        <div className="typing pt-14 text-white xl:mt-[35px] md:text-lg md:text-white xl:text-xl lg:mt-[65px]">
           <TypeWriter />
           <div className="w-[350px] mt-4 ml-[40px] mb-4 xl:w-[500px]">
             Experience convenience and innovation with Drive Smart at Next
